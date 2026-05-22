@@ -12,6 +12,8 @@ services:
       - ./reports:/app/reports
     environment:
       - FINMIND_TOKEN=${FINMIND_TOKEN:-}
+    networks:
+      - stock-network
     restart: always
 
   scheduler:
@@ -22,4 +24,10 @@ services:
       - ./data:/app/data
     environment:
       - FINMIND_TOKEN=${FINMIND_TOKEN:-}
+    networks:
+      - stock-network
     restart: always
+
+networks:
+  stock-network:
+    driver: bridge

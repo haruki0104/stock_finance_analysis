@@ -29,5 +29,6 @@ docker-compose up -d
 
 ## 注意事項
 
+- **網路存取**：`docker-compose.yml` 已配置 `stock-network` (bridge 模式)，確保容器能存取外部金融 API (TWSE, FinMind)。
 - **資料持久化**：使用 `-v $(pwd)/data:/app/data` 將本地 data 目錄掛載到容器內，以保存 SQLite 快取。
 - **環境變數**：如果需要設定 FinMind Token，可以在 `docker-compose.yml` 中加入環境變數，或是在執行 `docker run` 時使用 `-e FINMIND_TOKEN=your_token`。
