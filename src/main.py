@@ -20,13 +20,21 @@ from src.model.multi_factor import MultiFactorModel
 from src.model.signal import generate_signals
 
 
+__version__ = "1.1.0"
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
-    """台股多因子分析系統 - CLI"""
+    """台股多因子分析系統 - CLI (v1.1.0)"""
     init_db()
     if ctx.invoked_subcommand is None:
         ctx.invoke(menu)
+
+
+@cli.command()
+def version():
+    """顯示版本號"""
+    click.echo(f"Taiwan Stock Multi-Factor Analysis System v{__version__}")
 
 
 @cli.command()

@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build: .
+    container_name: stock-analysis-dashboard
+    command: dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+    environment:
+      - FINMIND_TOKEN=${FINMIND_TOKEN:-}
+    restart: always
+
+  scheduler:
+    build: .
+    container_name: stock-analysis-scheduler
+    command: schedule --daemon
+    volumes:
+      - ./data:/app/data
+    environment:
+      - FINMIND_TOKEN=${FINMIND_TOKEN:-}
+    restart: always
