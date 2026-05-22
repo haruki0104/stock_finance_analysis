@@ -52,7 +52,15 @@ pip install -r requirements.txt
 
 ## 使用方式
 
-### CLI
+### 互動式選單 (推薦)
+
+只需執行主程式即可進入引導式選單：
+
+```bash
+python3 src/main.py
+```
+
+### CLI 常用指令
 
 ```bash
 # 檢查 API 連線

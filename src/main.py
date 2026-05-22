@@ -20,10 +20,86 @@ from src.model.multi_factor import MultiFactorModel
 from src.model.signal import generate_signals
 
 
-@click.group()
-def cli():
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
     """台股多因子分析系統 - CLI"""
     init_db()
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(menu)
+
+
+@cli.command()
+@click.pass_context
+def menu(ctx):
+    """互動式選單介面"""
+    click.echo("\n" + "="*50)
+    click.echo("  台股多因子分析系統 - 互動式選單")
+    click.echo("="*50)
+
+    options = [
+        ("1", "檢查 API 連線狀態", "check_api"),
+        ("2", "分析單一個股 (Report)", "analyze"),
+        ("3", "多因子評分 (批次篩選)", "score"),
+        ("4", "執行策略回測", "backtest"),
+        ("5", "啟動 Streamlit 視覺化儀表板", "dashboard"),
+        ("6", "執行每日資料更新", "schedule"),
+        ("7", "顯示評分權重配置", "weights"),
+        ("8", "清除快取資料", "clear"),
+        ("0", "離開系統", "exit")
+    ]
+
+    while True:
+        click.echo("\n可用操作:")
+        for key, desc, _ in options:
+            click.echo(f"  [{key}] {desc}")
+
+        choice = click.prompt("\n請輸入選項編號", type=str, default="1")
+
+        if choice == "0":
+            click.echo("正在離開系統...")
+            break
+
+        selected = next((opt for opt in options if opt[0] == choice), None)
+        if not selected:
+            click.echo("無效的選項，請重新輸入。")
+            continue
+
+        cmd_name = selected[2]
+
+        try:
+            if cmd_name == "analyze":
+                stock_id = click.prompt("請輸入股票代碼 (例如: 2330)", type=str)
+                ctx.invoke(analyze, stock_id=stock_id)
+            elif cmd_name == "score":
+                max_stocks = click.prompt("要分析的股票數量上限", type=int, default=50)
+                ctx.invoke(score, max_stocks=max_stocks)
+            elif cmd_name == "backtest":
+                strategy = click.prompt("選擇回測策略 (rotation/buyhold)",
+                                        type=click.Choice(["rotation", "buyhold"]),
+                                        default="rotation")
+                ctx.invoke(backtest, strategy=strategy)
+            elif cmd_name == "check_api":
+                ctx.invoke(check_api)
+            elif cmd_name == "dashboard":
+                ctx.invoke(dashboard)
+                break  # Dashboard typically takes over the process
+            elif cmd_name == "schedule":
+                ctx.invoke(schedule)
+            elif cmd_name == "weights":
+                ctx.invoke(weights)
+            elif cmd_name == "clear":
+                if click.confirm("確定要清除所有快取資料嗎?"):
+                    ctx.invoke(clear)
+            
+            click.echo("\n" + "-"*50)
+            if choice not in ["5", "0"]:
+                if not click.confirm("是否繼續使用選單?"):
+                    break
+        except Exception as e:
+            logger.error(f"執行時發生錯誤: {e}")
+            if not click.confirm("是否要重試?"):
+                break
 
 
 @cli.command()

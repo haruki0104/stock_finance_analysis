@@ -77,6 +77,47 @@ class MultiFactorRotationStrategy(bt.Strategy):
                 self.sell(data=data, size=pos)
 
 
+class SingleStockStrategy(bt.Strategy):
+    """用於分析單一股票是否符合回測邏輯的策略"""
+    params = (
+        ("buy_threshold", 0.65),
+        ("sell_threshold", 0.45),
+        ("rebalance_day", 4),
+    )
+
+    def __init__(self):
+        self.sma5 = bt.ind.SMA(self.data.close, period=5)
+        self.sma20 = bt.ind.SMA(self.data.close, period=20)
+        self.sma60 = bt.ind.SMA(self.data.close, period=60)
+        self.rsi = bt.ind.RSI(self.data.close, period=14)
+
+    def next(self):
+        if self.data.datetime.date(0).weekday() != self.params.rebalance_day:
+            return
+
+        score = 0.5
+        close = self.data.close[0]
+        ma5 = self.sma5[0]
+        ma20 = self.sma20[0]
+        ma60 = self.sma60[0]
+        rsi = self.rsi[0]
+
+        if close > ma20: score += 0.1
+        if close > ma60: score += 0.1
+        if ma20 > ma60: score += 0.1
+        if rsi < 30: score += 0.15
+        elif rsi > 70: score -= 0.15
+        if ma5 > ma20: score += 0.1
+
+        pos = self.getposition(self.data).size
+        if score >= self.params.buy_threshold and pos == 0:
+            size = int(self.broker.getcash() / close / 10) * 10
+            if size > 0:
+                self.buy(size=size)
+        elif score < self.params.sell_threshold and pos > 0:
+            self.close()
+
+
 class BuyAndHoldStrategy(bt.Strategy):
     def __init__(self):
         self.ordered = False
