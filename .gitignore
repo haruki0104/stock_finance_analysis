@@ -6,7 +6,7 @@ venv/
 
 # Data
 *.db
-data/
+/data/
 
 # Reports
 reports/*.png
